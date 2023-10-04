@@ -1,64 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '../user/user';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class UserService {
-    users: User[] =[
-        {
-            id: 1, 
-            name: 'Toniko Pimenta', 
-            username: 'tonikopimenta',
-            password: 'mudar123',
-            canCreate: true,
-            canEdit: true
-        },
-        {
-            id: 2, 
-            name: 'John Cena', 
-            username: 'johncena',
-            password: 'ucantseeme',
-            canCreate: false,
-            canEdit: false
-        }
-    ]
+    
+    constructor(@InjectModel('User') private readonly userModel: Model<User>) { }
 
-    getAll(){
-        return this.users;
+    async getAll(){
+        return await this.userModel.find().exec();
     }
 
-    getById(id: number){
-        const user = this.users.find((value) => value.id == id);
-        return user;
+    async getById(id: string){
+        return await this.userModel.findById(id).exec();
     }
 
-    create(user: User){
-        let lastId = 0;
-        if (this.users.length > 0) {
-            lastId = this.users[this.users.length - 1].id;
-        }
-
-        user.id = lastId +1;
-        this.users.push(user);
-
-        return user;
-    }
-
-    update(user: User){
-        const userArray = this.getById(user.id);
-        if(userArray) {
-            userArray.name = user.name;
-            userArray.username = user.username;
-            userArray.password = user.password;
-            userArray.canCreate = user.canCreate;
-            userArray.canEdit = user.canEdit;
-        }
-
-        return userArray;
+    async create(user: User){
+        const createdUser = new this.userModel(user);
+        return await createdUser.save();
 
     }
 
-    delete(id: number){
-        const index = this.users.findIndex((value) => value.id == id);
-        this.users.splice(index, 1);
+    async update(id: string, user: User){
+        await this.userModel.updateOne({_id: id}, user).exec();
+        return this.getById(id);
+    }
+
+    async delete(id: string){
+        return await this.userModel.deleteOne({ _id: id}).exec();
     }
 }
