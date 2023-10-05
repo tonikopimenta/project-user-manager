@@ -19,6 +19,13 @@ export class UsersController {
         return this.userService.getById(id);    
     }
 
+    //CONFERIR DEPOIS
+
+    @Get(':email')
+    async getByEmail(@Param('email') email: string) : Promise<User> {
+        return this.userService.getByEmail(email);    
+    }
+
     @Post()
     async create(@Body() user: User): Promise<User>{
         return this.userService.create(user);
